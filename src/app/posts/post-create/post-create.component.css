@@ -1,0 +1,10 @@
+
+mat-form-field,textarea{
+  width: 100%;
+}
+
+button{
+  margin: auto;
+  align-items: center;
+}
+
