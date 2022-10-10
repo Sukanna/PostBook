@@ -1,6 +1,8 @@
 const { Console } = require('console');
 const bodyParser = require('body-parser');
 const express = require('express');
+const User = require('./models/user');
+const Post = require('./models/post');
 
 const app= express();
 
@@ -24,21 +26,22 @@ app.use((req ,res , next) => {
 // {
 //   res.send ('Hello from expr');
 // });
-app.post("/api/posts" , (req , res, next) =>{
-  const post = req.body;
+app.post("/api/posts" , async (req , res, next) =>{
+  const post = new Post({
+    title: req.body.title,
+    content: req.body.content
+  });
+
+  await post.save();
   console.log('Post added successfully!!');
-  console.log(post);
   res.status(201).json({
     message:'post added successfully'
   });
 });
 
-app.get('/api/posts' ,  (req , res, next) =>
+app.get('/api/posts' ,  async (req , res, next) =>
 {
-  const posts = [
-    {id : '1' , title : 'First Server side post' , content : 'This is coming from server'},
-    {id : '2' , title : 'Second Server side post' , content : 'This is also coming from server'},
-  ];
+  const posts = await Post.find({}).lean();
   res.status(200).json({
     message : 'Post fetched successfully!',
     posts: posts
@@ -95,7 +98,7 @@ app.post('/user/signup', (req, res, next) => {
 })
 
 });
-app.post('/user/signup', (req, res, next) => {
+app.post('/user/login', (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
 
