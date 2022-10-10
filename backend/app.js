@@ -95,6 +95,53 @@ app.post('/user/signup', (req, res, next) => {
 })
 
 });
+app.post('/user/signup', (req, res, next) => {
+  const email = req.body.email;
+  const password = req.body.password;
+
+  let fetchedUser;
+
+    User.findOne({ email : email })
+        .then(user => {
+            if(!user){
+                return res.status(500).json({
+                    success: false,
+                    message: "User not found"
+                })
+            }
+            fetchedUser = user;
+
+            return bcrypt.compare(password, user.password)
+        })
+            .then(isMatching => {
+                if(!isMatching) {
+                    return res.status(401).json({
+                        success: false,
+                        message: "Password does not match"
+                    })
+                }
+
+                const token = jwt.sign(
+                    {
+                        email: fetchedUser.email,
+                        user_id: fetchedUser._id
+                    },
+                    process.env.JWT_KEY,
+                    { expiresIn: '1hr' }
+                );
+
+                res.status(200).json({
+                    token: token,
+                    expiresIn: 3600
+                })
+            })
+            .catch(err => {
+                return res.status(401).json({
+                    message: 'Something went wrong decripting password'
+                })
+            })
+
+});
 
 module.exports = app;
 
